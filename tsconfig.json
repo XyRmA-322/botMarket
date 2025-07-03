@@ -20,7 +20,7 @@
       "outDir": "dist",
       "types": ["node","vite/client"]
     },
-    "include": ["src/**/*.ts", "api/**/*.ts", "src/**/*.vue", "server.ts"],
+    "include": ["src/**/*.ts", "api/**/*.ts", "src/**/*.vue", "api/prices.js", "api/ping-new.js"],
     "exclude": ["node_modules"]
   }
 

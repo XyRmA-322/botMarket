@@ -1,7 +1,9 @@
 import axios from 'axios';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async (req: VercelRequest, res: VercelResponse) => {
+export default async function handler(
+  req,
+  res
+) {
   try {
     const { data } = await axios.get('https://market.csgo.com/api/v2/prices/RUB.json', {
       headers: {
@@ -15,7 +17,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   } catch (error) {
     res.status(500).json({ 
       error: 'Market API error',
-      details: error 
+      details: error instanceof Error ? error.message : error
     });
   }
-};
+}
