@@ -21,7 +21,7 @@ const fetchPrices = async () => {
         <v-container>
           <AuthForm v-if="!auth.user"></AuthForm>
           <Home v-else></Home>
-          <v-btn @click="fetchPrices">Получить</v-btn>
+          <v-btn @click="fetchPrices"> Получить</v-btn>
         </v-container>
       </v-main>
     </v-app>
