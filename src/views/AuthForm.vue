@@ -69,6 +69,7 @@ const handleSubmit = async () => {
         <v-btn 
           type="submit" 
           color="primary" 
+         class="mt-4"
           block 
           :loading="auth.isLoading"
         >

@@ -4,10 +4,12 @@ import api from '../services/api'
 import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
 // import { useReportStore } from '@stores/reportStore'
-import { useAlertStore } from '../stores/alertStore'
-import { useFilterStore } from '../stores/filterStore'
+// import { useAlertStore } from '../stores/alertStore'
+// import { useFilterStore } from '../stores/filterStore'
+import { supabase } from '../services/supabase'
 
-import type { AttributeType, DepartType, FileType, FilterUserType, OrganizationType, UserInfo } from '@/types'
+import { useAuthStore } from './authStore'
+import { SettingType } from '@/types'
 
 export const getAxios = async (pApi: string) => {
   try {
@@ -47,20 +49,40 @@ export const deleteAxios = async (pApi: string): Promise<boolean | number> => {
 
 export const useNsiStore = defineStore('storeNsi', () => {
   // const reportStore = useReportStore()
-  const alertStore = useAlertStore()
-  const { filter } = storeToRefs(useFilterStore())
+  // const alertStore = useAlertStore()
+  const authStore = useAuthStore()
+  // const { filter } = storeToRefs(useFilterStore())
 
   //-------------------------------------| Организации |---------------------------------------
   const steam = reactive({
     api: {} as any,
     async getApi() {
-      // 8b40w7zrq0Q9Z8iV3WS80j8FN8H9G62
-      // const apiURL = 'https://steamcommunity.com/pointssummary/ajaxgetasyncconfig'
       const apiURL = 'https://market.csgo.com/api/v2/prices/RUB.json'
-      // const formData = new FormData()
-      //   formData.append('access_token', 'eyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwQl8yNjdCOEYzQl9BRDdDMiIsICJzdWIiOiAiNzY1NjExOTgxNjEwMjI4MzUiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3NTEzODA4NTAsICJuYmYiOiAxNzQyNjU0MTA4LCAiaWF0IjogMTc1MTI5NDEwOCwgImp0aSI6ICIwMDA4XzI2ODlCQTNEXzE3NUE1IiwgIm9hdCI6IDE3NTAyNjQxNTYsICJydF9leHAiOiAxNzY4MjI0MDc4LCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiNzcuNzkuMTc0LjIzNCIsICJpcF9jb25maXJtZXIiOiAiNzcuNzkuMTc0LjIzNCIgfQ.aApZhcpMKiEj67Lghx4cylX2IszwQh2kOpLeJJiv95m1qFq2wkRE_FyahCLIE8QKSwpD56SMEI2YYG49KXthDw')
-      // this.api = await postAxios(apiURL, formData)
       this.api = await getAxios(apiURL)
+    }
+  })
+  //-------------------------------------| Организации |---------------------------------------
+  const setting = reactive({
+    item: {} as SettingType,
+    async getSetting() {
+      let { data, error } = await supabase
+        .from('settings')
+        .select("*")
+        .eq('user_id', authStore.user?.id)
+        if (data && data.length > 0) {
+          console.log(data[0]);
+          this.item = data[0]
+        }
+        
+    },
+    async set() {
+      const { data, error } = await supabase
+        .from('settings')
+        .insert([
+          this.item
+        ])
+        .select()
+        
     }
   })
   // //-------------------------------------| Объединенные Отделы |--------------------------------------
@@ -158,6 +180,7 @@ export const useNsiStore = defineStore('storeNsi', () => {
     //--------------|Организация|-------------------
     steam,
     //--------------|Объединенные Отделы|-----------
+    setting
     // departFilter,
     // departNewFilter,
     // departForFilter,

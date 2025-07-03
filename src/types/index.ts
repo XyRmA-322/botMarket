@@ -4,15 +4,17 @@
 
 /*----------------------|Снэкбар|---------------------------*/
 export class SettingType {
-  id: number = 0
+  // id?: number
   sound: boolean = true
   update_price: boolean = true
   api_market: string = ''
   teleg_chat_id: string = ''
   teleg_bot_token: string = ''
   teleg_message: string = 'Подтвердите'
-  steam_token: string = ''
-  is_online: boolean = false
+  steam_token?: string 
+  steam_token_date?: string 
+  // is_online?: boolean
+  user_id: string = ''
 }
 // /*----------------------|Сотрудники|---------------------------*/
 // export class FilterUserType {

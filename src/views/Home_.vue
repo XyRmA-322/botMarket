@@ -1,10 +1,17 @@
 ﻿<script lang="ts" setup>
-import { defineAsyncComponent, ref } from 'vue';
+import { defineAsyncComponent, onMounted, ref } from 'vue';
 import { useAuthStore } from '../stores/authStore'
+import { useNsiStore } from '@/stores/nsiStore';
+import { storeToRefs } from 'pinia';
 const authStore = useAuthStore()
+const {setting} = storeToRefs(useNsiStore())
 const Settings = defineAsyncComponent(() => import('./Settings.vue'))
 
 const openSetting = ref<boolean>(false)
+
+onMounted(() => {
+  setting.value.getSetting()
+})
 
 </script>
 <template>
