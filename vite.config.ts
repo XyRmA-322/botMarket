@@ -10,8 +10,8 @@ export default defineConfig({
   plugins: [
     vue(),
     vuetify({
-      autoImport: true, // Automatically imports all components & directives
-    }),
+      autoImport: true // Automatically imports all components & directives
+    })
   ],
   resolve: {
     alias: {
@@ -28,7 +28,7 @@ export default defineConfig({
     proxy: {
       // Для локальной разработки с API
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:3001',
         changeOrigin: true
       }
     }

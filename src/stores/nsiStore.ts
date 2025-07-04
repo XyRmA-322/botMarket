@@ -9,7 +9,8 @@ import { computed, reactive, ref } from 'vue'
 import { supabase } from '../services/supabase'
 
 import { useAuthStore } from './authStore'
-import { SettingType } from '@/types'
+import { type MarketItemSaleType, MyPriceType, SettingType } from '@/types'
+import axios from 'axios'
 
 export const getAxios = async (pApi: string) => {
   try {
@@ -53,36 +54,104 @@ export const useNsiStore = defineStore('storeNsi', () => {
   const authStore = useAuthStore()
   // const { filter } = storeToRefs(useFilterStore())
 
-  //-------------------------------------| Организации |---------------------------------------
+  //-------------------------------------| Steam |---------------------------------------
   const steam = reactive({
     api: {} as any,
-    async getApi() {
-      const apiURL = 'https://market.csgo.com/api/v2/prices/RUB.json'
-      this.api = await getAxios(apiURL)
+    async pingMarket() {
+      try {
+        // Получаем Steam куки из браузера (если пользователь авторизован)
+        const steamCookies = document.cookie.split(';').find((c) => c.trim().startsWith('steamLoginSecure='))
+        console.log(document.cookie)
+
+        if (!steamCookies) {
+          throw new Error('Steam login required')
+        }
+
+        const response = await axios.post('/api/csgo-ping', {
+          steamCookies: steamCookies
+        })
+
+        console.log('Ping successful:', response.data)
+        return response.data
+      } catch (error) {
+        console.error('Ping failed:', error)
+        throw error
+      }
     }
   })
-  //-------------------------------------| Организации |---------------------------------------
+  //-------------------------------------| Телега |---------------------------------------
+  const teleg = reactive({
+    async sendMessage() {
+      const apiURL = 'https://api.telegram.org/bot' + setting.item.teleg_bot_token + '/sendMessage?chat_id=' + setting.item.teleg_chat_id + '&text=' + setting.item.teleg_message
+      await getAxios(apiURL)
+    }
+  })
+  //-------------------------------------| Настройка |---------------------------------------
   const setting = reactive({
     item: {} as SettingType,
     async getSetting() {
-      let { data, error } = await supabase
-        .from('settings')
-        .select("*")
-        .eq('user_id', authStore.user?.id)
-        if (data && data.length > 0) {
-          console.log(data[0]);
-          this.item = data[0]
-        }
-        
+      let { data, error } = await supabase.from('settings').select('*').eq('user_id', authStore.user?.id)
+      if (data && data.length > 0) {
+        this.item = data[0]
+      }
     },
     async set() {
-      const { data, error } = await supabase
-        .from('settings')
-        .insert([
-          this.item
-        ])
-        .select()
-        
+      if (this.item.recid) {
+        await supabase.from('settings').update([this.item]).eq('recid', this.item.recid).select()
+      } else {
+        await supabase.from('settings').insert([this.item]).select()
+      }
+    }
+  })
+  //-------------------------------------| Маркет |---------------------------------------
+  const market = reactive({
+    items: [] as MarketItemSaleType[],
+    my_prices: [] as MyPriceType[],
+    async getItemsOnSale() {
+      try {
+        await this.getMyPrices()
+        const response = await axios.get('/api/get_items', {
+          headers: {
+            'X-CSGO-API-KEY': setting.item.api_market
+          }
+        })
+        const tempList: MarketItemSaleType[] = response.data.items
+
+        // Создаем Map для быстрого поиска цен по market_hash_name
+        const pricesMap = new Map<string, MyPriceType>()
+        this.my_prices.forEach((price) => {
+          pricesMap.set(price.market_hash_name, price)
+        })
+
+        // Добавляем my_price к каждому элементу
+        const itemsWithPrices = tempList.map((item) => ({
+          ...item,
+          my_price: pricesMap.get(item.market_hash_name) || new MyPriceType()
+        }))
+
+        // Сортировка
+        const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
+        itemsWithPrices.sort((a, b) => collator.compare(a.market_hash_name, b.market_hash_name))
+
+        console.log(itemsWithPrices)
+        this.items = itemsWithPrices
+      } catch (error) {
+        console.error('Error fetching items:', error)
+        throw error
+      }
+    },
+    async getMyPrices() {
+      let { data, error } = await supabase.from('my_price').select('*').eq('user_id', authStore.user?.id)
+      if (data && data.length > 0) {
+        this.my_prices = data
+      }
+    },
+    async setMyPrice(pItem: MyPriceType) {
+      if (authStore.user?.id) {
+        pItem.user_id = authStore.user.id
+        await supabase.from('my_price').upsert([pItem]).eq('market_hash_name', pItem.market_hash_name).eq('user_id', authStore.user?.id).select()
+        this.getItemsOnSale()
+      }
     }
   })
   // //-------------------------------------| Объединенные Отделы |--------------------------------------
@@ -177,10 +246,14 @@ export const useNsiStore = defineStore('storeNsi', () => {
   // // ])
 
   return {
-    //--------------|Организация|-------------------
+    //--------------|Steam|-------------------
     steam,
+    //--------------|Телега|-------------------
+    teleg,
     //--------------|Объединенные Отделы|-----------
-    setting
+    setting,
+    //--------------|Маркет|-----------
+    market
     // departFilter,
     // departNewFilter,
     // departForFilter,

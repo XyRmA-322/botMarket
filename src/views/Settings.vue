@@ -1,12 +1,12 @@
 ﻿<script lang="ts" setup>
 import { computed, defineAsyncComponent, watch } from 'vue'
 
-import { defineProps, PropType } from 'vue'
+import { type PropType } from 'vue'
 const props = defineProps({
-   modelValue: {
-     type: Boolean as PropType<boolean>,
-     default: false
-   }
+  modelValue: {
+    type: Boolean as PropType<boolean>,
+    default: false
+  }
 })
 
 const FormSetting = defineAsyncComponent(() => import('@/components/FormSettings.vue'))
@@ -15,8 +15,8 @@ const emits = defineEmits(['update:modelValue'])
 const close = () => {
   emits('update:modelValue')
 }
-const isOpen = computed(():boolean => {
-return props.modelValue || false
+const isOpen = computed((): boolean => {
+  return props.modelValue || false
 })
 </script>
 

@@ -1,0 +1,6 @@
+{
+  "watch": ["api/**/*.ts", "server.js"],
+  "ext": "ts,js",
+  "exec": "node server.js",
+  "verbose": true
+}

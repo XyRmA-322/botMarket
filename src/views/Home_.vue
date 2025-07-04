@@ -1,18 +1,30 @@
 ﻿<script lang="ts" setup>
-import { defineAsyncComponent, onMounted, ref } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useAuthStore } from '../stores/authStore'
-import { useNsiStore } from '@/stores/nsiStore';
-import { storeToRefs } from 'pinia';
+import { useNsiStore } from '@/stores/nsiStore'
+import { storeToRefs } from 'pinia'
 const authStore = useAuthStore()
-const {setting} = storeToRefs(useNsiStore())
+const { setting, steam, market } = storeToRefs(useNsiStore())
 const Settings = defineAsyncComponent(() => import('./Settings.vue'))
 
+const Thead_ = defineAsyncComponent(() => import('@/components/TableQuery/Thead_.vue'))
+const Item_ = defineAsyncComponent(() => import('@/components/TableQuery/Item_.vue'))
+const Bottom_ = defineAsyncComponent(() => import('@/components/TableQuery/Bottom_.vue'))
 const openSetting = ref<boolean>(false)
 
 onMounted(() => {
   setting.value.getSetting()
 })
 
+const test = () => {
+  steam.value.pingMarket()
+}
+const getItemsOnSale = () => {
+  market.value.getItemsOnSale()
+}
+const tableHeight = computed(() => {
+  return window.innerHeight - 170 + 'px' //
+})
 </script>
 <template>
   <v-sheet>
@@ -20,7 +32,15 @@ onMounted(() => {
       <v-btn @click="openSetting = true">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
+      <v-btn @click="test()">Ping</v-btn>
+      <v-btn @click="getItemsOnSale()">Предметы на продаже</v-btn>
     </v-toolbar>
+
+    <v-table class="table main_table" :height="tableHeight" density="compact" fixed-header>
+      <Thead_ />
+      <Item_ v-for="(item, i) in market.items" :key="item.item_id" :item="item" :index="i" />
+    </v-table>
+    <Bottom_></Bottom_>
     <Settings v-model="openSetting" @update:model-value="openSetting = false"></Settings>
   </v-sheet>
 </template>

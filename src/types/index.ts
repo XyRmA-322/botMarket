@@ -4,17 +4,42 @@
 
 /*----------------------|Снэкбар|---------------------------*/
 export class SettingType {
-  // id?: number
+  recid: string | null = null
   sound: boolean = true
   update_price: boolean = true
   api_market: string = ''
   teleg_chat_id: string = ''
   teleg_bot_token: string = ''
   teleg_message: string = 'Подтвердите'
-  steam_token?: string 
-  steam_token_date?: string 
+  steam_token?: string
+  steam_token_date?: string
   // is_online?: boolean
   user_id: string = ''
+}
+/*----------------------|Мои цены|---------------------------*/
+export class MyPriceType {
+  market_hash_name: string = ''
+  percent: number = 10
+  buy_price: number = 0
+  user_id: string = ''
+  is_update: boolean = false
+}
+/*----------------------|Item с market|---------------------------*/
+export type MarketItemSaleType = {
+  assetid: string
+  botid: string
+  classid: string
+  currency: string
+  instanceid: string
+  item_id: string
+  left: string | null
+  live_time: number
+  market_hash_name: string
+  position: number
+  price: number
+  real_instance: string
+  status: string
+  my_price: MyPriceType
 }
 // /*----------------------|Сотрудники|---------------------------*/
 // export class FilterUserType {

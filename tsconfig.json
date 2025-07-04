@@ -1,27 +1,25 @@
 {
-    "compilerOptions": {
-      "useDefineForClassFields": true,
-      "module": "ESNext",
-      "strict": true,
-      "jsx": "preserve",
-      "sourceMap": true,
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "esModuleInterop": true,
-      "lib": ["ESNext", "DOM"],
-      "skipLibCheck": true,
-      "noEmit": true,
-      "baseUrl": ".",
-      "paths": {
-        "@/*": ["./src/*"]
-      },
-      "target": "ES2020",
-      "moduleResolution": "node",
-      "outDir": "dist",
-      "types": ["node","vite/client"]
+  "compilerOptions": {
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
     },
-    "include": ["src/**/*.ts", "api/**/*.ts", "src/**/*.vue", "api/prices.js", "api/ping-new.js"],
-    "exclude": ["node_modules"]
-  }
-
-  
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src/**/*.ts", "api/**/*.ts", "src/**/*.vue", "api/*.js"],
+  "exclude": ["node_modules"]
+}
