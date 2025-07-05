@@ -28,19 +28,33 @@ const setMyPrice = () => {
   if (!props.item.my_price.market_hash_name) {
     props.item.my_price.market_hash_name = props.item.market_hash_name
   }
+  const lPercent = props.item.my_price.percent / 100
+  props.item.my_price.min_price = props.item.my_price.buy_price * (1 - lPercent)
+  props.item.my_price.max_price = props.item.my_price.buy_price * (1 + lPercent)
   market.value.setMyPrice(props.item.my_price)
 }
 </script>
 <template>
   <tr v-if="index === 0 || item.classid !== market.items[index - 1].classid" class="main_table--row main_table--group_row">
     <td colspan="3">
-      <div class="py-3 d-flex align-center justify-space-between">
-        {{ item.market_hash_name }}
-        <v-checkbox v-model="item.my_price.is_update" class="ml-5" label="Отслеживать"></v-checkbox>
-        <v-text-field v-model="item.my_price.percent" style="width: 40px" label="%"></v-text-field>
-        <v-text-field v-model="item.my_price.buy_price" style="width: 80px" label="Цена закупа"></v-text-field>
-        <VBtnSave @click="setMyPrice()">ок</VBtnSave>
-      </div>
+      <v-row class="text-left align-center" dense>
+        <v-col cols="3">
+          {{ item.market_hash_name }}
+        </v-col>
+        <v-col cols="1"> Мин цена маркет: {{ market.best_prices[item.market_hash_name]?.[0].price / 100 }}руб. </v-col>
+        <v-col>
+          <v-checkbox v-model="item.my_price.is_update" class="ml-5" label="Отслеживать"></v-checkbox>
+        </v-col>
+        <v-col class="py-2">
+          <v-text-field v-model="item.my_price.percent" label="%"></v-text-field>
+        </v-col>
+        <v-col>
+          <v-text-field v-model="item.my_price.buy_price" label="Цена закупа (руб)"></v-text-field>
+        </v-col>
+        <v-col>
+          <VBtnSave @click="setMyPrice()">ок</VBtnSave>
+        </v-col>
+      </v-row>
     </td>
   </tr>
   <tr @dblclick="onOpenEdit()" class="main_table--row">

@@ -23,6 +23,8 @@ export class MyPriceType {
   buy_price: number = 0
   user_id: string = ''
   is_update: boolean = false
+  min_price?: number
+  max_price?: number
 }
 /*----------------------|Item с market|---------------------------*/
 export type MarketItemSaleType = {
@@ -32,7 +34,7 @@ export type MarketItemSaleType = {
   currency: string
   instanceid: string
   item_id: string
-  left: string | null
+  left: number | null
   live_time: number
   market_hash_name: string
   position: number
@@ -40,6 +42,18 @@ export type MarketItemSaleType = {
   real_instance: string
   status: string
   my_price: MyPriceType
+}
+
+/*----------------------|Item с market с лучшей ценой|---------------------------*/
+export type BestSaleItemsType = {
+  [key: string]: BestSaleItemType[]
+}
+export type BestSaleItemType = {
+  id: number
+  price: number
+  class: string
+  instance: string
+  extra: object
 }
 // /*----------------------|Сотрудники|---------------------------*/
 // export class FilterUserType {

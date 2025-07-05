@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 import { useNsiStore } from '@/stores/nsiStore'
 import { storeToRefs } from 'pinia'
 const authStore = useAuthStore()
-const { setting, steam, market } = storeToRefs(useNsiStore())
+const { setting, steam, market, formLoading, loadStatus } = storeToRefs(useNsiStore())
 const Settings = defineAsyncComponent(() => import('./Settings.vue'))
 
 const Thead_ = defineAsyncComponent(() => import('@/components/TableQuery/Thead_.vue'))
@@ -35,7 +35,7 @@ const tableHeight = computed(() => {
       <v-btn @click="test()">Ping</v-btn>
       <v-btn @click="getItemsOnSale()">Предметы на продаже</v-btn>
     </v-toolbar>
-
+    <v-progress-linear v-model="loadStatus" height="10" color="purple"></v-progress-linear>
     <v-table class="table main_table" :height="tableHeight" density="compact" fixed-header>
       <Thead_ />
       <Item_ v-for="(item, i) in market.items" :key="item.item_id" :item="item" :index="i" />

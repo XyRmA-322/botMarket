@@ -3,7 +3,6 @@ import axios from 'axios'
 
 export default async function handler(req, res) {
   try {
-    // Получаем API ключ из заголовка запроса
     const apiKey = req.headers['x-csgo-api-key'] || process.env.CSGO_API_KEY
 
     if (!apiKey) {
@@ -12,8 +11,23 @@ export default async function handler(req, res) {
         details: 'No CSGO API key provided'
       })
     }
+    const marketHashName = req.query.marketHashName || ''
+    const newPrice = req.query.newPrice || ''
 
-    const { data } = await axios.get('https://market.csgo.com/api/v2/items?key=' + apiKey)
+    if (!marketHashName) {
+      return res.status(404).json({
+        error: 'marketHashName required',
+        details: 'No marketHashName provided'
+      })
+    }
+    if (!newPrice) {
+      return res.status(404).json({
+        error: 'newPrice required',
+        details: 'No newPrice provided'
+      })
+    }
+
+    const { data } = await axios.get(`https://market.csgo.com/api/MassSetPrice/${marketHashName}/${newPrice}/items?key=${apiKey}`)
 
     res.setHeader('Cache-Control', 's-maxage=60')
     res.status(200).json(data)

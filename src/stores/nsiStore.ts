@@ -9,7 +9,7 @@ import { computed, reactive, ref } from 'vue'
 import { supabase } from '../services/supabase'
 
 import { useAuthStore } from './authStore'
-import { type MarketItemSaleType, MyPriceType, SettingType } from '@/types'
+import { BestSaleItemsType, type MarketItemSaleType, MyPriceType, SettingType } from '@/types'
 import axios from 'axios'
 
 export const getAxios = async (pApi: string) => {
@@ -107,34 +107,44 @@ export const useNsiStore = defineStore('storeNsi', () => {
   const market = reactive({
     items: [] as MarketItemSaleType[],
     my_prices: [] as MyPriceType[],
+    best_prices: {} as BestSaleItemsType,
+    uniqueUpdatedNames: [] as string[],
+
     async getItemsOnSale() {
       try {
+        loadStatus.value = 0
         await this.getMyPrices()
+        loadStatus.value = 15
         const response = await axios.get('/api/get_items', {
           headers: {
             'X-CSGO-API-KEY': setting.item.api_market
           }
         })
         const tempList: MarketItemSaleType[] = response.data.items
+        loadStatus.value = 40
 
         // Создаем Map для быстрого поиска цен по market_hash_name
         const pricesMap = new Map<string, MyPriceType>()
         this.my_prices.forEach((price) => {
           pricesMap.set(price.market_hash_name, price)
         })
-
+        loadStatus.value = 50
         // Добавляем my_price к каждому элементу
         const itemsWithPrices = tempList.map((item) => ({
           ...item,
           my_price: pricesMap.get(item.market_hash_name) || new MyPriceType()
         }))
-
+        loadStatus.value = 60
         // Сортировка
         const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
         itemsWithPrices.sort((a, b) => collator.compare(a.market_hash_name, b.market_hash_name))
+        loadStatus.value = 65
+        this.uniqueUpdatedNames = [...new Set(itemsWithPrices.filter((item) => item.my_price?.is_update === true).map((item) => item.market_hash_name))]
+        loadStatus.value = 75
+        await this.getBestSaleItems()
 
-        console.log(itemsWithPrices)
         this.items = itemsWithPrices
+        loadStatus.value = 100
       } catch (error) {
         console.error('Error fetching items:', error)
         throw error
@@ -150,8 +160,36 @@ export const useNsiStore = defineStore('storeNsi', () => {
       if (authStore.user?.id) {
         pItem.user_id = authStore.user.id
         await supabase.from('my_price').upsert([pItem]).eq('market_hash_name', pItem.market_hash_name).eq('user_id', authStore.user?.id).select()
-        this.getItemsOnSale()
+        // this.getItemsOnSale()
       }
+    },
+    async getBestSaleItems() {
+      this.best_prices = {}
+      const chunkSize = 50
+      const chunks = Array.from({ length: Math.ceil(this.uniqueUpdatedNames.length / chunkSize) }, (_, i) => this.uniqueUpdatedNames.slice(i * chunkSize, (i + 1) * chunkSize))
+
+      // Формируем строки запроса
+      const queryStrings = chunks.map((chunk) => chunk.map((name) => `&list_hash_name[]=${encodeURIComponent(name)}`).join(''))
+
+      // Отправляем запросы и получаем данные
+      const allResponses = await Promise.all(
+        queryStrings.map((query) =>
+          axios.get<BestSaleItemsType>(`/api/search_list_items_by_hash_name_all`, {
+            headers: {
+              'X-CSGO-API-KEY': setting.item.api_market
+            },
+            params: {
+              marketHashNames: query
+            }
+          })
+        )
+      )
+
+      // Извлекаем data из каждого ответа и объединяем
+      const allData: any = allResponses.map((res) => res.data.data)
+      console.log(allData)
+
+      this.best_prices = Object.assign({}, ...allData)
     }
   })
   // //-------------------------------------| Объединенные Отделы |--------------------------------------
@@ -236,7 +274,8 @@ export const useNsiStore = defineStore('storeNsi', () => {
   //   }
   // })
   // //------------------------------------| Прочее |-------------------------------------------
-  // const formLoading = ref(false)
+  const formLoading = ref(false)
+  const loadStatus = ref<number>(0)
   // const openNav = ref<boolean>(true)
 
   // // const stateFguList = ref([
@@ -253,7 +292,7 @@ export const useNsiStore = defineStore('storeNsi', () => {
     //--------------|Объединенные Отделы|-----------
     setting,
     //--------------|Маркет|-----------
-    market
+    market,
     // departFilter,
     // departNewFilter,
     // departForFilter,
@@ -265,7 +304,8 @@ export const useNsiStore = defineStore('storeNsi', () => {
     // //--------------|Файлы|---------------
     // file,
     // //----------------|Прочее|---------
-    // formLoading,
+    formLoading,
+    loadStatus
     // openNav
   }
 })
