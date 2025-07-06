@@ -5,7 +5,7 @@
 /*----------------------|Снэкбар|---------------------------*/
 export class SettingType {
   recid: string | null = null
-  sound: boolean = true
+  volume: number = 1
   update_price: boolean = true
   api_market: string = ''
   teleg_chat_id: string = ''

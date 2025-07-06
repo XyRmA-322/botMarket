@@ -29,7 +29,7 @@ const isOpen = computed((): boolean => {
         <VBtnBack @click="close()">Закрыть</VBtnBack>
       </v-toolbar>
       <v-card-text>
-        <FormSetting></FormSetting>
+        <FormSetting @close="close"></FormSetting>
       </v-card-text>
     </v-card>
   </v-dialog>

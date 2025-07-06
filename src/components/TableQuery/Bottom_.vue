@@ -17,6 +17,10 @@
       <v-avatar size="20" color="primary"></v-avatar>
       - Вы можете забрать купленную вещь
     </span>
+    <span class="ml-3">
+      <v-avatar size="20" color="white"></v-avatar>
+      - Ожидание покупателя
+    </span>
   </v-row>
 </template>
 

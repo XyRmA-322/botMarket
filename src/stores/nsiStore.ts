@@ -12,6 +12,8 @@ import { useAuthStore } from './authStore'
 import { BestSaleItemsType, type MarketItemSaleType, MyPriceType, SettingType } from '@/types'
 import axios from 'axios'
 
+import sound from '@/assets/sound.mp3'
+
 export const getAxios = async (pApi: string) => {
   try {
     const apiURL = pApi
@@ -58,25 +60,25 @@ export const useNsiStore = defineStore('storeNsi', () => {
   const steam = reactive({
     api: {} as any,
     async pingMarket() {
-      try {
-        // Получаем Steam куки из браузера (если пользователь авторизован)
-        const steamCookies = document.cookie.split(';').find((c) => c.trim().startsWith('steamLoginSecure='))
-        console.log(document.cookie)
+      teleg.playSound()
 
-        if (!steamCookies) {
-          throw new Error('Steam login required')
-        }
-
-        const response = await axios.post('/api/csgo-ping', {
-          steamCookies: steamCookies
-        })
-
-        console.log('Ping successful:', response.data)
-        return response.data
-      } catch (error) {
-        console.error('Ping failed:', error)
-        throw error
-      }
+      // Используем правильный путь (зависит от структуры вашего проекта)
+      // try {
+      //   // Получаем Steam куки из браузера (если пользователь авторизован)
+      //   const steamCookies = document.cookie.split(';').find((c) => c.trim().startsWith('steamLoginSecure='))
+      //   console.log(document.cookie)
+      //   if (!steamCookies) {
+      //     throw new Error('Steam login required')
+      //   }
+      //   const response = await axios.post('/api/csgo-ping', {
+      //     steamCookies: steamCookies
+      //   })
+      //   console.log('Ping successful:', response.data)
+      //   return response.data
+      // } catch (error) {
+      //   console.error('Ping failed:', error)
+      //   throw error
+      // }
     }
   })
   //-------------------------------------| Телега |---------------------------------------
@@ -84,6 +86,15 @@ export const useNsiStore = defineStore('storeNsi', () => {
     async sendMessage() {
       const apiURL = 'https://api.telegram.org/bot' + setting.item.teleg_bot_token + '/sendMessage?chat_id=' + setting.item.teleg_chat_id + '&text=' + setting.item.teleg_message
       await getAxios(apiURL)
+    },
+    async playSound() {
+      const audio = new Audio(sound) // или  для Vue
+      audio.volume = setting.item.volume
+      // Обработка promise от play()
+      audio
+        .play()
+        .then(() => console.log('Sound played successfully'))
+        .catch((error) => console.error('Error playing sound:', error))
     }
   })
   //-------------------------------------| Настройка |---------------------------------------
@@ -113,8 +124,10 @@ export const useNsiStore = defineStore('storeNsi', () => {
     async getItemsOnSale() {
       try {
         loadStatus.value = 0
+        loadText.value = 'Получение моих цен'
         await this.getMyPrices()
         loadStatus.value = 15
+        loadText.value = 'Получение выставленных предметов'
         const response = await axios.get('/api/get_items', {
           headers: {
             'X-CSGO-API-KEY': setting.item.api_market
@@ -122,6 +135,7 @@ export const useNsiStore = defineStore('storeNsi', () => {
         })
         const tempList: MarketItemSaleType[] = response.data.items
         loadStatus.value = 40
+        loadText.value = 'Обработка'
 
         // Создаем Map для быстрого поиска цен по market_hash_name
         const pricesMap = new Map<string, MyPriceType>()
@@ -129,22 +143,36 @@ export const useNsiStore = defineStore('storeNsi', () => {
           pricesMap.set(price.market_hash_name, price)
         })
         loadStatus.value = 50
+        loadText.value = 'Объединение с моими ценами'
         // Добавляем my_price к каждому элементу
         const itemsWithPrices = tempList.map((item) => ({
           ...item,
           my_price: pricesMap.get(item.market_hash_name) || new MyPriceType()
         }))
         loadStatus.value = 60
+        loadText.value = 'Сортировка'
         // Сортировка
+        let IsBuyItem: boolean = false
         const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
-        itemsWithPrices.sort((a, b) => collator.compare(a.market_hash_name, b.market_hash_name))
+        itemsWithPrices.sort((a, b) => {
+          if ((a.status == '2' || b.status == '2') && !IsBuyItem) {
+            IsBuyItem = true
+            console.log(1)
+          }
+          return collator.compare(a.market_hash_name, b.market_hash_name)
+        })
+        if (IsBuyItem) {
+          teleg.sendMessage()
+          teleg.playSound()
+        }
         loadStatus.value = 65
+        loadText.value = 'Уникальные названия'
         this.uniqueUpdatedNames = [...new Set(itemsWithPrices.filter((item) => item.my_price?.is_update === true).map((item) => item.market_hash_name))]
         loadStatus.value = 75
-        await this.getBestSaleItems()
-
+        loadText.value = 'Получение лучших цен'
         this.items = itemsWithPrices
-        loadStatus.value = 100
+
+        await this.getBestSaleItems()
       } catch (error) {
         console.error('Error fetching items:', error)
         throw error
@@ -161,6 +189,33 @@ export const useNsiStore = defineStore('storeNsi', () => {
         pItem.user_id = authStore.user.id
         await supabase.from('my_price').upsert([pItem]).eq('market_hash_name', pItem.market_hash_name).eq('user_id', authStore.user?.id).select()
         // this.getItemsOnSale()
+      }
+    },
+    async massSetPrice(marketHashName: string, newPrice: number) {
+      try {
+        // Проверка минимальной цены
+        if (newPrice < 50) {
+          throw new Error('Minimum price is 50 kopecks')
+        }
+
+        const response = await axios.get('/api/mass_set_price', {
+          headers: {
+            'X-CSGO-API-KEY': setting.item.api_market
+          },
+          params: {
+            marketHashName: encodeURIComponent(marketHashName),
+            newPrice: Math.round(newPrice) // Убедимся, что цена целая
+          }
+        })
+
+        if (!response.data.success) {
+          throw new Error('Failed to update prices: ' + JSON.stringify(response.data))
+        }
+
+        return response.data
+      } catch (error) {
+        console.error('Error in massSetPrice:', error)
+        throw error
       }
     },
     async getBestSaleItems() {
@@ -190,6 +245,146 @@ export const useNsiStore = defineStore('storeNsi', () => {
       console.log(allData)
 
       this.best_prices = Object.assign({}, ...allData)
+      // Теперь обновляем цены
+      loadText.value = 'Обновление новых цен'
+      loadStatus.value = 85
+
+      await this.updatePricesBasedOnBestPrices()
+      loadStatus.value = 100
+    },
+    async updatePricesBasedOnBestPrices() {
+      const RUB_TO_KOPECKS = 100
+
+      try {
+        // 1. Подготовка данных
+        const itemsToUpdate: { item_id: number; price: number }[] = []
+        const itemsByHashName: Record<string, MarketItemSaleType[]> = {}
+
+        // Группируем предметы по market_hash_name
+        this.items.forEach((item) => {
+          if (!itemsByHashName[item.market_hash_name]) {
+            itemsByHashName[item.market_hash_name] = []
+          }
+          itemsByHashName[item.market_hash_name].push(item)
+        })
+
+        // 2. Определение новых цен
+        for (const [marketHashName, items] of Object.entries(itemsByHashName)) {
+          const myPrice = items[0].my_price
+          if (!myPrice?.is_update) continue
+
+          const bestPrices = this.best_prices[marketHashName]
+          if (!bestPrices?.length) continue
+
+          const bestMarketPrice = bestPrices[0].price / RUB_TO_KOPECKS
+          const currentMinPrice = Math.min(...items.map((i) => i.price))
+          let newPrice = currentMinPrice
+
+          // Логика определения новой цены
+          if (myPrice.min_price !== undefined && bestMarketPrice < myPrice.min_price) {
+            newPrice = myPrice.max_price ?? currentMinPrice
+          } else if (currentMinPrice > bestMarketPrice) {
+            newPrice = Math.max(bestMarketPrice - 0.01, myPrice.min_price ?? 0)
+          } else if (currentMinPrice === bestMarketPrice) {
+            newPrice = (bestPrices[1]?.price ?? bestPrices[0].price - 1) / RUB_TO_KOPECKS
+          }
+
+          const newPriceInKopecks = Math.round(newPrice * RUB_TO_KOPECKS)
+          const currentPriceInKopecks = Math.round(currentMinPrice * RUB_TO_KOPECKS)
+
+          if (newPriceInKopecks !== currentPriceInKopecks && newPriceInKopecks >= 50) {
+            items.forEach((item) => {
+              itemsToUpdate.push({
+                item_id: parseInt(item.item_id),
+                price: newPriceInKopecks
+              })
+            })
+          }
+        }
+
+        // 3. Обновление цен батчами по 50 предметов
+        if (itemsToUpdate.length > 0) {
+          loadStatus.value = 0
+          loadText.value = 'Обновление цен...'
+
+          const BATCH_SIZE = 50
+          let processed = 0
+          let totalUpdated = 0
+          let totalFailed = 0
+
+          for (let i = 0; i < itemsToUpdate.length; i += BATCH_SIZE) {
+            const batch = itemsToUpdate.slice(i, i + BATCH_SIZE)
+
+            try {
+              const result = await this.massSetPriceV2(batch)
+              totalUpdated += result.updated.length
+              totalFailed += result.failed.length
+
+              if (result.failed.length > 0) {
+                console.warn('Failed to update items:', result.failed)
+              }
+            } catch (error) {
+              console.error('Batch update error:', error)
+              totalFailed += batch.length
+            }
+
+            processed += batch.length
+            loadStatus.value = Math.round((processed / itemsToUpdate.length) * 100)
+
+            // Задержка между батчами
+            if (i + BATCH_SIZE < itemsToUpdate.length) {
+              await new Promise((resolve) => setTimeout(resolve, 1000))
+            }
+          }
+
+          loadText.value = `Обновлено ${totalUpdated} позиций, не удалось: ${totalFailed}`
+        } else {
+          loadText.value = 'Нет цен для обновления'
+        }
+      } catch (error) {
+        console.error('Ошибка в updatePricesBasedOnBestPrices:', error)
+        loadText.value = 'Ошибка при обновлении цен'
+        throw error
+      }
+    },
+    async massSetPriceV2(items: { item_id: number; price: number }[], currency: string = 'RUB') {
+      try {
+        // Проверка минимальной цены (50 копеек для RUB)
+        if (currency === 'RUB') {
+          const invalidItem = items.find((item) => item.price > 0 && item.price < 50)
+          if (invalidItem) {
+            throw new Error(`Price for item ${invalidItem.item_id} is below minimum (50 kopecks)`)
+          }
+        }
+        const response = await axios.post(
+          '/api/mass_set_price_v2',
+          {
+            items,
+            currency
+          },
+          {
+            headers: {
+              'X-CSGO-API-KEY': setting.item.api_market
+            }
+          }
+        )
+        if (!response.data.success) {
+          throw new Error(response.data.error || 'Failed to update prices')
+        }
+
+        // Возвращаем только успешные обновления
+        const successfulUpdates = response.data.items?.filter((item: any) => item.success) || []
+        const failedUpdates = items.filter((item) => !successfulUpdates.some((su: any) => su.item_id === item.item_id))
+
+        return {
+          success: true,
+          updated: successfulUpdates,
+          failed: failedUpdates
+        }
+      } catch (error) {
+        console.error('Error in massSetPriceV2:', error)
+        throw error
+      }
     }
   })
   // //-------------------------------------| Объединенные Отделы |--------------------------------------
@@ -276,6 +471,7 @@ export const useNsiStore = defineStore('storeNsi', () => {
   // //------------------------------------| Прочее |-------------------------------------------
   const formLoading = ref(false)
   const loadStatus = ref<number>(0)
+  const loadText = ref<string>('Начало')
   // const openNav = ref<boolean>(true)
 
   // // const stateFguList = ref([
@@ -305,7 +501,8 @@ export const useNsiStore = defineStore('storeNsi', () => {
     // file,
     // //----------------|Прочее|---------
     formLoading,
-    loadStatus
+    loadStatus,
+    loadText
     // openNav
   }
 })

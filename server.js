@@ -8,7 +8,7 @@ app.use(express.json())
 
 // Динамический импорт API-роутов
 const apiModules = await Promise.all(
-  ['prices', 'csgo-ping', 'get_items', 'mass_set_price', 'search_list_items_by_hash_name_all'].map(async (file) => {
+  ['prices', 'csgo-ping', 'get_items', 'mass_set_price', 'search_list_items_by_hash_name_all', 'mass_set_price_v2'].map(async (file) => {
     return {
       name: file,
       module: await import(`./api/${file}.js`)
@@ -26,7 +26,7 @@ apiModules.forEach(({ name, module }) => {
   })
 })
 
-app.listen(3001, () => console.log('API server: http://localhost:3000'))
+app.listen(3010, () => console.log('API server: http://localhost:3000'))
 
 // import { createRequire } from 'module'
 // const require = createRequire(import.meta.url)

@@ -64,6 +64,7 @@ const setMyPrice = () => {
       <v-avatar v-if="item.status === '1'" size="20" color="red"></v-avatar>
       <v-avatar v-if="item.status === '3'" size="20" color="yellow"></v-avatar>
       <v-avatar v-if="item.status === '4'" size="20" color="primary"></v-avatar>
+      <v-avatar v-if="item.status === '7'" size="20" color="white"></v-avatar>
       {{ item.market_hash_name }}
     </td>
     <td>{{ item.price }}</td>
