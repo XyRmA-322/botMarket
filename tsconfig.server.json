@@ -1,9 +1,25 @@
+// {
+//   "extends": "./tsconfig.json",
+//   "compilerOptions": {
+//     "module": "CommonJS",
+//     "esModuleInterop": true,
+//     "skipLibCheck": true
+//   },
+//   "include": ["server.ts", "api/**/*.ts"]
+// }
+
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "target": "ESNext",
+    "module": "ESNext",
+    "outDir": "./vercel-build",
+    "rootDir": ".",
+    "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node"
   },
-  "include": ["server.ts", "api/**/*.ts"]
+  "include": ["server.ts", "api/**/*.ts"],
+  "exclude": ["node_modules"]
 }

@@ -46,3 +46,20 @@ export default defineConfig({
     }
   }
 })
+
+// "scripts": {
+//     "dev": "kill-port --port 5173,5174,5175,3000 && vite",
+//     "dev:api": "kill-port --port 3000 && nodemon --watch 'api/**/*.ts' --watch 'server.js' -e js,ts --exec node server.js",
+//     "dev:all": "npm-run-all --parallel dev dev:api",
+//     "build": "vite build",
+//     "preview": "vite preview",
+//     "vercel-build": "vite build && vercel-build"
+//   },
+
+// "scripts": {
+//     "dev": "vite",
+//     "build": "vite build",
+//     "preview": "vite preview",
+//     "start": "node server.js",
+//     "vercel-build": "npm run build"
+//   },
