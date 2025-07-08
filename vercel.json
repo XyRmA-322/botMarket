@@ -12,7 +12,7 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["api/**/*.js", "api/**/*.ts"]
+        "includeFiles": ["api/**/*.js"]
       }
     }
   ],
