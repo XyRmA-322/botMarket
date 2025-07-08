@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js",
-    "vercel-build": "npm run build && tsc server.ts --outDir vercel-build && cp -r api vercel-build/",
-    "build-api": "tsc server.ts --outDir vercel-build && cp -r api vercel-build/"
+    "vercel-build": "npm run build && tsc server.js --outDir vercel-build && cp -r api vercel-build/",
+    "build-api": "tsc server.js --outDir vercel-build && cp -r api vercel-build/"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",

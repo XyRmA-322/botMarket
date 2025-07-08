@@ -9,7 +9,7 @@
       }
     },
     {
-      "src": "server.ts",
+      "src": "server.js",
       "use": "@vercel/node",
       "config": {
         "includeFiles": ["api/**/*.js", "api/**/*.ts"]
@@ -19,7 +19,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server.ts"
+      "dest": "server.js"
     },
     {
       "src": "/(.*)",
