@@ -1,32 +1,40 @@
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import cors from 'cors'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
+
+// Middleware
+app.use(cors())
 app.use(express.json())
 
-// Динамический импорт API-роутов
-const apiModules = await Promise.all(
-  ['prices', 'csgo-ping', 'get_items', 'mass_set_price', 'search_list_items_by_hash_name_all', 'mass_set_price_v2'].map(async (file) => {
-    return {
-      name: file,
-      module: await import(`./api/${file}.js`)
-    }
-  })
-)
+// API routes
+const apiFiles = ['prices', 'csgo-ping', 'get_items', 'mass_set_price', 'search_list_items_by_hash_name_all', 'mass_set_price_v2']
 
-apiModules.forEach(({ name, module }) => {
-  app.all(`/api/${name}`, async (req, res) => {
-    try {
-      await module.default(req, res)
-    } catch (error) {
-      res.status(500).json({ error: error.message })
-    }
-  })
+for (const file of apiFiles) {
+  try {
+    const module = await import(`./api/${file}.js`)
+    app.all(`/api/${file}`, module.default)
+    console.log(`Route /api/${file} loaded successfully`)
+  } catch (err) {
+    console.error(`Failed to load route /api/${file}:`, err)
+  }
+}
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'dist')))
+
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
-app.listen(3000, () => console.log('API server: http://localhost:3000'))
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
 
 export default app
 

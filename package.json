@@ -9,7 +9,7 @@
     "dev:all": "npm-run-all --parallel dev dev:api",
     "build": "vite build",
     "preview": "vite preview",
-    "vercel-build": "vite build && vercel-build",
+    "vercel-build": "vite build",
     "start": "node server.js"
   },
   "dependencies": {
