@@ -26,7 +26,7 @@ apiModules.forEach(({ name, module }) => {
   })
 })
 
-app.listen(3010, () => console.log('API server: http://localhost:3000'))
+app.listen(3000, () => console.log('API server: http://localhost:3000'))
 
 // import { createRequire } from 'module'
 // const require = createRequire(import.meta.url)

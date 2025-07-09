@@ -28,7 +28,7 @@ export default defineConfig({
     proxy: {
       // Для локальной разработки с API
       '/api': {
-        target: 'http://localhost:3010',
+        target: 'http://localhost:3000',
         changeOrigin: true
       }
     }
