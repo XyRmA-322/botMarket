@@ -1,15 +1,11 @@
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import cors from 'cors'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 
-app.use(cors())
-app.use(express.json())
-
-// API routes
+// Только API роуты
 const apiFiles = ['prices', 'csgo-ping', 'get_items', 'mass_set_price', 'search_list_items_by_hash_name_all', 'mass_set_price_v2']
 
 for (const file of apiFiles) {
@@ -21,35 +17,11 @@ for (const file of apiFiles) {
   }
 }
 
-// Serve static assets with explicit headers
-app.use('/assets', express.static(path.join(__dirname, 'dist', 'assets')), {
-  setHeaders: (res) => {
-    res.set('Content-Type', 'application/javascript')
-  }
-})
-
-// Serve CSS files
-app.get('/main.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'main.css'), {
-    headers: {
-      'Content-Type': 'text/css'
-    }
-  })
-})
-
-// SPA fallback - only for HTML
-app.get('*', (req, res) => {
-  if (!req.path.includes('.')) {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'))
-  } else {
-    res.status(404).send('Not found')
-  }
-})
-
+// Отключаем статику в Express, так как Vercel будет обслуживать ее напрямую
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-
 export default app
+
 // import express from 'express'
 // import path from 'path'
 // import { fileURLToPath } from 'url'
