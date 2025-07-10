@@ -28,7 +28,7 @@ export default defineConfig({
     proxy: {
       // Для локальной разработки с API
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:3003',
         changeOrigin: true
       }
     }
@@ -44,7 +44,7 @@ export default defineConfig({
         assetFileNames: `assets/[name].[hash].[ext]`
       }
     }
-  },
+  }
 })
 
 // "scripts": {

@@ -73,5 +73,5 @@ watch(
 </script>
 
 <template>
-  <v-switch v-model="autoRefreshEnabled" label="Автообновление" @update:model-value="handleAutoRefreshChange"></v-switch>
+  <v-switch v-model="autoRefreshEnabled" color="primary" label="Автообновление" @update:model-value="handleAutoRefreshChange"></v-switch>
 </template>

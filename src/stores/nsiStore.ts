@@ -349,40 +349,36 @@ export const useNsiStore = defineStore('storeNsi', () => {
     },
     async massSetPriceV2(items: { item_id: number; price: number }[], currency: string = 'RUB') {
       try {
-        // Проверка минимальной цены (50 копеек для RUB)
+        // Валидация
         if (currency === 'RUB') {
           const invalidItem = items.find((item) => item.price > 0 && item.price < 50)
           if (invalidItem) {
             throw new Error(`Price for item ${invalidItem.item_id} is below minimum (50 kopecks)`)
           }
         }
+
         const response = await axios.post(
           '/api/mass_set_price_v2',
-          {
-            items,
-            currency
-          },
+          JSON.stringify({ items, currency }), // Явное преобразование в JSON
           {
             headers: {
-              'X-CSGO-API-KEY': setting.item.api_market
+              'X-CSGO-API-KEY': setting.item.api_market,
+              'Content-Type': 'application/json'
             }
           }
         )
-        if (!response.data.success) {
-          throw new Error(response.data.error || 'Failed to update prices')
-        }
 
-        // Возвращаем только успешные обновления
-        const successfulUpdates = response.data.items?.filter((item: any) => item.success) || []
-        const failedUpdates = items.filter((item) => !successfulUpdates.some((su: any) => su.item_id === item.item_id))
+        if (!response.data?.success) {
+          throw new Error(response.data?.error || 'Invalid response format')
+        }
 
         return {
           success: true,
-          updated: successfulUpdates,
-          failed: failedUpdates
+          updated: response.data.items?.filter((item: any) => item.success) || [],
+          failed: items.filter((item) => !response.data.items?.some((su: any) => su.item_id === item.item_id))
         }
       } catch (error) {
-        console.error('Error in massSetPriceV2:', error)
+        console.error('Detailed error:', error)
         throw error
       }
     }
