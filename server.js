@@ -18,24 +18,26 @@ for (const file of apiFiles) {
 }
 
 // Serve static files with proper MIME types
-app.use(express.static(path.join(__dirname, 'dist'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.set('Content-Type', 'application/javascript');
-    } else if (path.endsWith('.css')) {
-      res.set('Content-Type', 'text/css');
+app.use(
+  express.static(path.join(__dirname, 'dist'), {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.js')) {
+        res.set('Content-Type', 'application/javascript')
+      } else if (path.endsWith('.css')) {
+        res.set('Content-Type', 'text/css')
+      }
     }
-  }
-}));
+  })
+)
 
 // SPA fallback - must be last
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'), {
-    headers: {
-      'Content-Type': 'text/html'
-    }
-  });
-});
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'dist', 'index.html'), {
+//     headers: {
+//       'Content-Type': 'text/html'
+//     }
+//   });
+// });
 
 // Отключаем статику в Express, так как Vercel будет обслуживать ее напрямую
 const PORT = process.env.PORT || 3000
