@@ -22,20 +22,32 @@ for (const file of apiFiles) {
   }
 }
 
-// Serve static files with proper headers
+// Serve static assets with proper headers
 app.use(
-  express.static(path.join(__dirname, 'dist'), {
+  '/assets',
+  express.static(path.join(__dirname, 'dist', 'assets'), {
     setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+      res.set('Content-Type', 'application/javascript')
+      res.set('Cache-Control', 'public, max-age=31536000, immutable')
     }
   })
 )
 
-// SPA fallback with proper MIME type
-app.get('*', (req, res) => {
-  res.setHeader('Content-Type', 'text/html')
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
-})
+// Serve CSS files
+app.use(
+  express.static(path.join(__dirname, 'dist'), {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.css')) {
+        res.set('Content-Type', 'text/css')
+      }
+    }
+  })
+)
+
+// SPA fallback
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// });
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
