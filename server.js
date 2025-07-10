@@ -16,43 +16,38 @@ for (const file of apiFiles) {
   try {
     const module = await import(`./api/${file}.js`)
     app.all(`/api/${file}`, module.default)
-    console.log(`Route /api/${file} loaded successfully`)
   } catch (err) {
     console.error(`Failed to load route /api/${file}:`, err)
   }
 }
 
-// Serve static assets with proper headers
-app.use(
-  '/assets',
-  express.static(path.join(__dirname, 'dist', 'assets'), {
-    setHeaders: (res) => {
-      res.set('Content-Type', 'application/javascript')
-      res.set('Cache-Control', 'public, max-age=31536000, immutable')
-    }
-  })
-)
+// Serve static assets with explicit headers
+app.use('/assets', express.static(path.join(__dirname, 'dist', 'assets')), {
+  setHeaders: (res) => {
+    res.set('Content-Type', 'application/javascript')
+  }
+})
 
 // Serve CSS files
-app.use(
-  express.static(path.join(__dirname, 'dist'), {
-    setHeaders: (res, path) => {
-      if (path.endsWith('.css')) {
-        res.set('Content-Type', 'text/css')
-      }
+app.get('/main.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'main.css'), {
+    headers: {
+      'Content-Type': 'text/css'
     }
   })
-)
+})
 
-// SPA fallback
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-// });
+// SPA fallback - only for HTML
+app.get('*', (req, res) => {
+  if (!req.path.includes('.')) {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+  } else {
+    res.status(404).send('Not found')
+  }
+})
 
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
 export default app
 // import express from 'express'

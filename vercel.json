@@ -29,8 +29,14 @@
       "continue": true
     },
     {
+      "src": "/main.css",
+      "headers": {
+        "Content-Type": "text/css"
+      }
+    },
+    {
       "src": "/(.*)",
-      "dest": "/",
+      "dest": "/index.html",
       "headers": {
         "Content-Type": "text/html; charset=utf-8"
       }

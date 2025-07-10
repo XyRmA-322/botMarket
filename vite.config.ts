@@ -40,9 +40,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html') // index.html как точка входа
       },
       output: {
-        entryFileNames: `assets/[name].js`,
-        chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`
+        assetFileNames: 'assets/[name].[hash][extname]',
+        entryFileNames: 'assets/[name].[hash].js'
       }
     }
   }
