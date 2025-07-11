@@ -11,6 +11,7 @@ const Thead_ = defineAsyncComponent(() => import('@/components/TableQuery/Thead_
 const Item_ = defineAsyncComponent(() => import('@/components/TableQuery/Item_.vue'))
 const Bottom_ = defineAsyncComponent(() => import('@/components/TableQuery/Bottom_.vue'))
 const RefreshSwitch = defineAsyncComponent(() => import('@/components/TableQuery/RefreshSwitch.vue'))
+const PercentPlus = defineAsyncComponent(() => import('@/components/PercentPlus.vue'))
 const openSetting = ref<boolean>(false)
 
 onMounted(() => {
@@ -35,6 +36,8 @@ const tableHeight = computed(() => {
       </v-btn>
       <v-btn @click="test()">Ping</v-btn>
       <v-btn @click="getItemsOnSale()">Предметы на продаже</v-btn>
+      <v-spacer></v-spacer>
+      <PercentPlus></PercentPlus>
       <v-spacer></v-spacer>
       <RefreshSwitch></RefreshSwitch>
     </v-toolbar>

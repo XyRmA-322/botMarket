@@ -41,7 +41,13 @@ const setMyPrice = () => {
         <v-col cols="3">
           {{ item.market_hash_name }}
         </v-col>
-        <v-col cols="1"> Мин цена маркет: {{ market.best_prices[item.market_hash_name]?.[0].price / 100 }}руб. </v-col>
+        <v-col cols="1">
+          <span v-if="market.best_prices[item.market_hash_name]?.[0].price">Мин цена маркет: {{ market.best_prices[item.market_hash_name]?.[0].price / 100 }} руб.</span>
+        </v-col>
+        <v-col cols="1">
+          <span v-if="item.my_price.min_price">Мин моя: {{ item.my_price.min_price.toFixed(2) }} руб.</span><br />
+          <span v-if="item.my_price.max_price">Макс моя: {{ item.my_price.max_price.toFixed(2) }} руб.</span>
+        </v-col>
         <v-col>
           <v-checkbox v-model="item.my_price.is_update" class="ml-5" label="Отслеживать"></v-checkbox>
         </v-col>
