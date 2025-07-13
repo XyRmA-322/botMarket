@@ -60,25 +60,25 @@ export const useNsiStore = defineStore('storeNsi', () => {
   const steam = reactive({
     api: {} as any,
     async pingMarket() {
-      // teleg.playSound()
+      teleg.playSound()
 
       // Используем правильный путь (зависит от структуры вашего проекта)
-      try {
-        // Получаем Steam куки из браузера (если пользователь авторизован)
-        const steamCookies = document.cookie.split(';').find((c) => c.trim().startsWith('steamLoginSecure='))
-        console.log(document.cookie)
-        if (!steamCookies) {
-          throw new Error('Steam login required')
-        }
-        const response = await axios.post('/api/csgo-ping', {
-          steamCookies: steamCookies
-        })
-        console.log('Ping successful:', response.data)
-        return response.data
-      } catch (error) {
-        console.error('Ping failed:', error)
-        throw error
-      }
+      // try {
+      //   // Получаем Steam куки из браузера (если пользователь авторизован)
+      //   const steamCookies = document.cookie.split(';').find((c) => c.trim().startsWith('steamLoginSecure='))
+      //   console.log(document.cookie)
+      //   if (!steamCookies) {
+      //     throw new Error('Steam login required')
+      //   }
+      //   const response = await axios.post('/api/csgo-ping', {
+      //     steamCookies: steamCookies
+      //   })
+      //   console.log('Ping successful:', response.data)
+      //   return response.data
+      // } catch (error) {
+      //   console.error('Ping failed:', error)
+      //   throw error
+      // }
     }
   })
   //-------------------------------------| Телега |---------------------------------------
